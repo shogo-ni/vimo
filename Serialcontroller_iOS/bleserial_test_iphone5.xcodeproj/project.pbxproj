@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C02C20D31C4AAD480008442F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C02C20D21C4AAD480008442F /* AVFoundation.framework */; };
 		C04B2C9E1C3A5A8B001809BD /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD39CDEC18322D0A00B137E6 /* Images.xcassets */; };
+		C08A04E21C42C5760046BD1A /* CSVLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = C08A04E11C42C5760046BD1A /* CSVLogging.m */; };
+		C08A04E41C42C9B40046BD1A /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C08A04E31C42C9B40046BD1A /* AudioToolbox.framework */; };
 		CD39CDD218322D0900B137E6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD39CDD118322D0900B137E6 /* Foundation.framework */; };
 		CD39CDD418322D0900B137E6 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD39CDD318322D0900B137E6 /* CoreGraphics.framework */; };
 		CD39CDD618322D0900B137E6 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD39CDD518322D0900B137E6 /* UIKit.framework */; };
@@ -37,6 +40,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C02C20D21C4AAD480008442F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		C08A04E01C42C5550046BD1A /* CSVLogging.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CSVLogging.h; path = bleserial_test_iphone5/CSVLogging.h; sourceTree = SOURCE_ROOT; };
+		C08A04E11C42C5760046BD1A /* CSVLogging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CSVLogging.m; path = bleserial_test_iphone5/CSVLogging.m; sourceTree = SOURCE_ROOT; };
+		C08A04E31C42C9B40046BD1A /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		C0CB2D1D1C3E8DDC00004782 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ViewController.h; path = bleserial_test_iphone5/ViewController.h; sourceTree = SOURCE_ROOT; };
 		CD39CDCE18322D0900B137E6 /* BLESerial_test_iPhone5.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BLESerial_test_iPhone5.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD39CDD118322D0900B137E6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -66,6 +73,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C02C20D31C4AAD480008442F /* AVFoundation.framework in Frameworks */,
+				C08A04E41C42C9B40046BD1A /* AudioToolbox.framework in Frameworks */,
 				CD39CDD418322D0900B137E6 /* CoreGraphics.framework in Frameworks */,
 				CD39CDD618322D0900B137E6 /* UIKit.framework in Frameworks */,
 				CD39CDD218322D0900B137E6 /* Foundation.framework in Frameworks */,
@@ -107,6 +116,8 @@
 		CD39CDD018322D0900B137E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C02C20D21C4AAD480008442F /* AVFoundation.framework */,
+				C08A04E31C42C9B40046BD1A /* AudioToolbox.framework */,
 				CD39CDD118322D0900B137E6 /* Foundation.framework */,
 				CD39CDD318322D0900B137E6 /* CoreGraphics.framework */,
 				CD39CDD518322D0900B137E6 /* UIKit.framework */,
@@ -127,6 +138,8 @@
 				CD39CDEC18322D0A00B137E6 /* Images.xcassets */,
 				CD39CE0F18322FCB00B137E6 /* BLEBaseClass.h */,
 				CD39CE1018322FCB00B137E6 /* BLEBaseClass.m */,
+				C08A04E01C42C5550046BD1A /* CSVLogging.h */,
+				C08A04E11C42C5760046BD1A /* CSVLogging.m */,
 				CD39CDD818322D0900B137E6 /* Supporting Files */,
 			);
 			path = BLESerial_test_iPhone5;
@@ -265,6 +278,7 @@
 			files = (
 				CD39CDEB18322D0A00B137E6 /* ViewController.m in Sources */,
 				CD39CE1118322FCB00B137E6 /* BLEBaseClass.m in Sources */,
+				C08A04E21C42C5760046BD1A /* CSVLogging.m in Sources */,
 				CD39CDE218322D0900B137E6 /* AppDelegate.m in Sources */,
 				CD39CDDE18322D0900B137E6 /* main.m in Sources */,
 			);

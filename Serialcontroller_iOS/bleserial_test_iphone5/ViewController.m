@@ -21,6 +21,9 @@
 #define Pomp3_ON_BUTTON 8
 #define Pomp3_OFF_BUTTON 9
 #define Pomp3_Release_BUTTON 10
+#define Record_BUTTON 11
+#define Stop_BUTTON 12
+
 
 //BLESerial
 //#define UUID_VSP_SERVICE					@"569a1101-b87f-490c-92cb-11ba5ea5167c" //VSP
@@ -35,10 +38,18 @@
 @interface ViewController () <BLEDeviceClassDelegate>
 @property (strong)		BLEBaseClass*	BaseClass;
 @property (readwrite)	BLEDeviceClass*	Device;
+@property (weak, nonatomic) IBOutlet UITextView *teString;
+
 @end
 
 @implementation ViewController
 
+
+//
+//------------------------------------------------------------------------------------------
+//	UIボタンたちの生成
+//------------------------------------------------------------------------------------------
+//
 
 - (void)viewDidLoad
 {
@@ -46,13 +57,13 @@
 	// Do any additional setup after loading the view, typically from a nib.
     
     //---センサー値結果のテキストフィールド生成---
-    _textField=[[UITextField alloc] init];
-    [_textField setFrame:CGRectMake(110,50,100,40)];  //位置と大きさ設定
-    [_textField setText:@"---"];
-    [_textField setBackgroundColor:[UIColor whiteColor]];
-    [_textField setBorderStyle:UITextBorderStyleRoundedRect];
-    _textField.font = [UIFont fontWithName:@"Helvetica" size:30];
-    [self.view addSubview:_textField];
+    _textField1=[[UITextField alloc] init];
+    [_textField1 setFrame:CGRectMake(110,50,100,40)];  //位置と大きさ設定
+    [_textField1 setText:@"---"];
+    [_textField1 setBackgroundColor:[UIColor whiteColor]];
+    [_textField1 setBorderStyle:UITextBorderStyleRoundedRect];
+    _textField1.font = [UIFont fontWithName:@"Helvetica" size:30];
+    [self.view addSubview:_textField1];
     
     //---CONNECTボタン生成---
     _connectButton=[UIButton buttonWithType:UIButtonTypeRoundedRect];
@@ -73,8 +84,8 @@
     [self.view addSubview:_disconnectButton];
     
     
-    // ________ ---------  ________ --------- __________ ----------
-    //---Pomp1 ONボタン生成--- ________ --------- __________ ----------
+    
+    //---Pomp1 ONボタン生成---
     _Pomp1OnButton=[UIButton buttonWithType:UIButtonTypeRoundedRect];
     [_Pomp1OnButton setFrame:CGRectMake(30,220,250,25)];  //位置と大きさ設定
     [_Pomp1OnButton setTitle:@"Pomp1 ON" forState:UIControlStateNormal];
@@ -102,8 +113,8 @@
     [self.view addSubview:_Pomp1ReleaseButton];
     
     
-    // ________ ---------  ________ --------- __________ ----------
-    //---Pomp2 ONボタン生成--- ________ --------- __________ ----------
+
+    //---Pomp2 ONボタン生成---
     _Pomp2OnButton=[UIButton buttonWithType:UIButtonTypeRoundedRect];
     [_Pomp2OnButton setFrame:CGRectMake(30,370,250,25)];  //位置と大きさ設定
     [_Pomp2OnButton setTitle:@"Pomp2 ON" forState:UIControlStateNormal];
@@ -131,8 +142,8 @@
     [self.view addSubview:_Pomp2ReleaseButton];
     
     
-    // ________ ---------  ________ --------- __________ ----------
-    //---Pomp3 ONボタン生成--- ________ --------- __________ ----------
+
+    //---Pomp3 ONボタン生成---
     _Pomp3OnButton=[UIButton buttonWithType:UIButtonTypeRoundedRect];
     [_Pomp3OnButton setFrame:CGRectMake(30,520,250,25)];  //位置と大きさ設定
     [_Pomp3OnButton setTitle:@"Pomp3 ON" forState:UIControlStateNormal];
@@ -160,6 +171,27 @@
     [self.view addSubview:_Pomp3ReleaseButton];
     
     
+    
+    //---音・加速度　記録ボタン生成---
+    _Record=[UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [_Record setFrame:CGRectMake(30,670,250,25)];  //位置と大きさ設定
+    [_Record setTitle:@"Record CSV" forState:UIControlStateNormal];
+    [_Record setTag:Record_BUTTON];           //ボタン識別タグ
+    [_Record addTarget:self action:@selector(onButtonClick:) forControlEvents:UIControlEventTouchUpInside];             //ボタンクリックイベント登録
+    _Record.titleLabel.font = [UIFont fontWithName:@"Helvetica" size:30];
+    [self.view addSubview:_Record];
+
+    
+    //---音・加速度　記録停止ボタン生成---
+    _Stop=[UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [_Stop setFrame:CGRectMake(30,720,250,25)];  //位置と大きさ設定
+    [_Stop setTitle:@"Stop CSV" forState:UIControlStateNormal];
+    [_Stop setTag:Stop_BUTTON];           //ボタン識別タグ
+    [_Stop addTarget:self action:@selector(onButtonClick:) forControlEvents:UIControlEventTouchUpInside];             //ボタンクリックイベント登録
+    _Stop.titleLabel.font = [UIFont fontWithName:@"Helvetica" size:30];
+    [self.view addSubview:_Stop];
+    
+    
     //---ボタンの状態設定---
     _connectButton.enabled = TRUE;
     _disconnectButton.enabled = FALSE;
@@ -172,6 +204,8 @@
     _Pomp3OnButton.enabled = FALSE;
     _Pomp3OffButton.enabled = FALSE;
     _Pomp3ReleaseButton.enabled = FALSE;
+    _Record.enabled = FALSE;
+    _Stop.enabled = FALSE;
     
     
     //	BLEBaseClassの初期化
@@ -182,10 +216,10 @@
     
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+    
 }
 
 
@@ -212,12 +246,27 @@
 		if (characteristic == tx)	{
 //            NSLog(@"Receive value=%@",characteristic.value);
             uint8_t*	buf = (uint8_t*)[characteristic.value bytes]; //bufに結果が入る
-            _textField.text = [NSString stringWithFormat:@"%d", buf[0]];
+            _textField1.text = [NSString stringWithFormat:@"%d", buf[0]];
+            _textField1.text = [NSString stringWithFormat:@"%d", buf[1]];
 			return;
 		}
         
 	}
 }
+
+// 音声取得
+
+
+
+// 加速度取得
+- (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration{
+    
+    NSLog(@"x:%f",acceleration.x);   // x-axis
+    NSLog(@"y:%f",acceleration.y);   // y-axis
+    NSLog(@"z:%f",acceleration.z);   // z-axis
+    
+}
+
 
 //////////////////////////////////////////////////////////////
 //  ボタンクリックイベント
@@ -239,14 +288,17 @@
         [self sendOff2];
     }else if(sender.tag==Pomp2_Release_BUTTON){
         [self sendRelease2];
-//    }else if(sender.tag==Pomp3_ON_BUTTON){
-//        [self sendOn3];
-//    }else if(sender.tag==Pomp3_OFF_BUTTON){
-//        [self sendOff3];
-//    }else if(sender.tag==Pomp3_Release_BUTTON){
-//        [self sendRelease3];
+    }else if(sender.tag==Pomp3_ON_BUTTON){
+        [self sendOn3];
+    }else if(sender.tag==Pomp3_OFF_BUTTON){
+        [self sendOff3];
+    }else if(sender.tag==Pomp3_Release_BUTTON){
+        [self sendRelease3];
+    }else if(sender.tag==Record_BUTTON){
+        [self record];
+    }else if(sender.tag==Stop_BUTTON){
+        [self recordstop];
     }
-    
 }
 
 
@@ -273,10 +325,11 @@
         _Pomp2OnButton.enabled = TRUE;
         _Pomp2OffButton.enabled = TRUE;
         _Pomp2ReleaseButton.enabled = TRUE;
-//        _Pomp3OnButton.enabled = TRUE;
-//        _Pomp3OffButton.enabled = TRUE;
-//        _Pomp3ReleaseButton.enabled = TRUE;
-        
+        _Pomp3OnButton.enabled = TRUE;
+        _Pomp3OffButton.enabled = TRUE;
+        _Pomp3ReleaseButton.enabled = TRUE;
+        _Record.enabled = TRUE;
+        _Stop.enabled = TRUE;
         
 		//	tx(Device->iPhone)のnotifyをセット
 		CBCharacteristic*	tx = [_Device getCharacteristic:UUID_VSP_SERVICE characteristic:UUID_TX];
@@ -287,9 +340,9 @@
 	}
 }
 
-//------------------------------------------------------------------------------------------
-//	disconnectボタンを押したとき
-//------------------------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////
+//	disconnect
+//////////////////////////////////////////////////////////////
 - (void)disconnect {
 	if (_Device)	{
 		//	UUID_DEMO_SERVICEサービスを持っているデバイスから切断する
@@ -304,18 +357,23 @@
         _Pomp2OnButton.enabled = FALSE;
         _Pomp2OffButton.enabled = FALSE;
         _Pomp2ReleaseButton.enabled = FALSE;
-//        _Pomp3OnButton.enabled = FALSE;
-//        _Pomp3OffButton.enabled = FALSE;
-//        _Pomp3ReleaseButton.enabled = FALSE;
+        _Pomp3OnButton.enabled = FALSE;
+        _Pomp3OffButton.enabled = FALSE;
+        _Pomp3ReleaseButton.enabled = FALSE;
+        _Record.enabled = FALSE;
+        _Stop.enabled = FALSE;
         
-		_textField.text = @"---";
+		_textField1.text = @"---";
+        _textField2.text = @"---";
 		//	周りのBLEデバイスからのadvertise情報のスキャンを開始する
 		[_BaseClass scanDevices:nil];
 	}
 }
 
-
-//Pomp1 動作コマンド = 1　→　2
+//////////////////////////////////////////////////////////////
+//	Pomp Control
+//////////////////////////////////////////////////////////////
+////Pomp1 動作コマンド = 1　→　2
 -(void)sendOn1{
     if (_Device)	{
         NSLog((@"Pomp1ON"));
@@ -329,7 +387,7 @@
 	}
 }
 
-//Pomp1 停止コマンド = 0
+////Pomp1 停止コマンド = 0
 -(void)sendOff1{
     if (_Device)	{
         NSLog((@"Pomp1OFF"));
@@ -402,44 +460,127 @@
 
 
 ////Pomp3 動作コマンド = 6
-//-(void)sendOn3{
-//    if (_Device)	{
-//        NSLog((@"ON"));
-//        //	iPhone->Device
-//        CBCharacteristic*	rx = [_Device getCharacteristic:UUID_VSP_SERVICE characteristic:UUID_RX];
-//        //	ダミーデータ
-//        uint8_t	buf[1];
-//        buf[0]=6;
-//        NSData*	data = [NSData dataWithBytes:&buf length:sizeof(buf)];
-//        [_Device writeWithoutResponse:rx value:data];
-//    }
-//}
-//
-////Pomp3 停止コマンド = 7
-//-(void)sendOff3{
-//    if (_Device)	{
-//        //	iPhone->Device
-//        CBCharacteristic*	rx = [_Device getCharacteristic:UUID_VSP_SERVICE characteristic:UUID_RX];
-//        //	ダミーデータ
-//        uint8_t	buf[1];
-//        buf[0]=7;
-//        NSData*	data = [NSData dataWithBytes:&buf length:sizeof(buf)];
-//        [_Device writeWithoutResponse:rx value:data];
-//    }
-//}
-//
-////Pomp3 解放コマンド = 8
-//-(void)sendRelease3{
-//    if (_Device)	{
-//        //	iPhone->Device
-//        CBCharacteristic*	rx = [_Device getCharacteristic:UUID_VSP_SERVICE characteristic:UUID_RX];
-//        //	ダミーデータ
-//        uint8_t	buf[1];
-//        buf[0]=8;
-//        NSData*	data = [NSData dataWithBytes:&buf length:sizeof(buf)];
-//        [_Device writeWithoutResponse:rx value:data];
-//    }
-//}
+-(void)sendOn3{
+    if (_Device)	{
+        NSLog((@"Pomp3ON"));
+        //	iPhone->Device
+        CBCharacteristic*	rx = [_Device getCharacteristic:UUID_VSP_SERVICE characteristic:UUID_RX];
+        //	ダミーデータ
+        uint8_t	buf[1];
+        buf[0]=6;
+        NSData*	data = [NSData dataWithBytes:&buf length:sizeof(buf)];
+        [_Device writeWithoutResponse:rx value:data];
+    }
+}
 
+////Pomp3 停止コマンド = 7
+-(void)sendOff3{
+    if (_Device)	{
+        NSLog((@"Pomp3OFF"));
+        //	iPhone->Device
+        CBCharacteristic*	rx = [_Device getCharacteristic:UUID_VSP_SERVICE characteristic:UUID_RX];
+        //	ダミーデータ
+        uint8_t	buf[1];
+        buf[0]=7;
+        NSData*	data = [NSData dataWithBytes:&buf length:sizeof(buf)];
+        [_Device writeWithoutResponse:rx value:data];
+    }
+}
+
+////Pomp3 解放コマンド = 8
+-(void)sendRelease3{
+    if (_Device)	{
+        NSLog((@"Pomp3Release"));
+        //	iPhone->Device
+        CBCharacteristic*	rx = [_Device getCharacteristic:UUID_VSP_SERVICE characteristic:UUID_RX];
+        //	ダミーデータ
+        uint8_t	buf[1];
+        buf[0]=8;
+        NSData*	data = [NSData dataWithBytes:&buf length:sizeof(buf)];
+        [_Device writeWithoutResponse:rx value:data];
+    }
+}
+
+//////////////////////////////////////////////////////////////
+//	Record Voice & Axis to CSV
+//////////////////////////////////////////////////////////////
+// CSV保存ボタン
+- (IBAction)csvAction:(id)sender {
+    
+    NSMutableString* mstr = [[NSMutableString alloc] init];
+    
+    // 1行目だけ先に追加（見出し）
+    [mstr insertString:@"id,data\n" atIndex:0];
+    
+    // カンマ区切りで追加
+    for (int i = 0; i < 4; i++) {
+        NSString* str = [NSString stringWithFormat:@"%@,%@\n",@"001", @"aaa"];
+        // appendString文字列の後方へ追加
+        [mstr appendString:str];
+    }
+    
+    // ファイルパスの取得
+    NSString *pth01 = (NSString *)
+    [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, // ドキュメントディレクトリー
+                                         NSUserDomainMask, // User
+                                         YES) lastObject];
+    NSString *pth02 = [pth01 stringByAppendingPathComponent:@"test.csv"];
+    
+    // 取得したNSStringをNSdataに変換
+    NSData* out_data = [mstr dataUsingEncoding:NSUTF8StringEncoding];
+    // ファイルに書きこむ
+    [out_data writeToFile:pth02 atomically:YES];
+    // テキスト画面に表示
+    self.teString.text = [self.teString.text stringByAppendingFormat:@"%@", mstr];
+}
+
+
+
+////Recordコマンド
+-(void)record{
+    if (_Device)	{
+
+        // 以下、→出力フォーマット生成→出力先パス指定→ファイル生成の手順
+//        NSMutableArray *accelerationData = [[NSMutableArray array] retain];   // センサーログ
+//        NSDate *startTime = [[NSDate date] retain];   // プログラム実行開始時刻
+//        
+//        // 出力フォーマット生成
+//        NSTimeInterval elapsedTime = [startTime timeIntervalSinceNow];   // 経過時刻
+//        NSString* str = [NSString stringWithFormat:@"%f,%f,%f,%f",-elapsedTime,acceleration.x,acceleration.y,acceleration.z];
+//        [accelerationData addObject:str];
+//        
+//        // 出力先パス指定
+//        NSDateFormatter* format = [[NSDateFormatter alloc]init];
+//        NSString *dateFormatter = @"yyMMdd_HHmmss";
+//        [format setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"JST"]];
+//        [format setDateFormat:dateFormatter];
+//        NSString *dateStr = [format stringFromDate:startTime];
+//        
+//        NSString* path = [@"<Application_Home>/Documents"stringByExpandingTildeInPath];
+//// 上のコード、もともとはこれ               NSString* path = [[NSString stringWithString:@"<Application_Home>/Documents"]stringByExpandingTildeInPath];
+//        
+//        path = [path stringByAppendingString:@"log_"];
+//        path = [path stringByAppendingString:dateStr];
+//        path = [path stringByAppendingString:@".csv"];
+//        
+//        // ファイル生成
+//        NSString* fullstring = [accelerationData componentsJoinedByString:@"\n"];
+//        [fullstring writeToFile:path atomically:YES encoding:NSUTF8StringEncoding error:nil];
+
+    }
+}
+
+////Recordコマンド = 10
+-(void)recordstop{
+    if (_Device)	{
+        //	iPhone->Device
+        CBCharacteristic*	rx = [_Device getCharacteristic:UUID_VSP_SERVICE characteristic:UUID_RX];
+        //	ダミーデータ
+        uint8_t	buf[1];
+        buf[0]=10;
+        NSData*	data = [NSData dataWithBytes:&buf length:sizeof(buf)];
+        [_Device writeWithoutResponse:rx value:data];
+    }
+}
 
 @end

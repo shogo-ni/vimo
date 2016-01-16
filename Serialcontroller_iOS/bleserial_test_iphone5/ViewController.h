@@ -7,11 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 
 @interface ViewController : UIViewController{
     UIButton* _connectButton;
     UIButton* _disconnectButton;
-    UITextField* _textField;
+    UITextField* _textField1;
+    UITextField* _textField2;
     UIButton* _Pomp1OnButton;
     UIButton* _Pomp1OffButton;
     UIButton* _Pomp1ReleaseButton;
@@ -21,7 +23,16 @@
     UIButton* _Pomp3OnButton;
     UIButton* _Pomp3OffButton;
     UIButton* _Pomp3ReleaseButton;
+    UIButton* _Record;
+    UIButton* _Stop;
     
 }
 
+// 加速度センシング
+//@interface ViewController : UIViewControlle <UIAccelerometerDelegate>{
+//    [[UIAccelerometer sharedAccelerometer]setUpdateInterval:0.1];
+//    [[UIAccelerometer sharedAccelerometer]setDelegate:self];
+//}
+
 @end
+

@@ -110,9 +110,6 @@
 
 
 
-
-
-
 @interface BLEBaseClass() <CBCentralManagerDelegate>
 @property (strong)	CBCentralManager*	CentralManager;
 @property (strong)	NSMutableArray*		Devices;
